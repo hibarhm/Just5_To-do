@@ -22,11 +22,13 @@ services:
     environment:
       - DB_HOST=db
       - DB_USER=root
-      - DB_PASSWORD=your_password # Match the db password
+      - DB_PASSWORD=your_password 
       - DB_NAME=todo_db
   frontend:
     build: ../frontend
     ports:
-      - "5173:5173"
+      - "5173:5173"  # ← ADD THIS PORT MAPPING
     depends_on:
       - backend
+    environment:
+    - VITE_API_URL=http://backend:3000/api

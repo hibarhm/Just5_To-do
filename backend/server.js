@@ -1,13 +1,16 @@
 const express = require('express');
 const mysql = require('mysql2/promise');
+const cors = require('cors'); 
 const app = express();
 
+// Add CORS middleware
+app.use(cors());
 app.use(express.json());
 
 const dbConfig = {
   host: 'db',
   user: 'root',
-  password: 'your_password', // Match docker-compose.yml
+  password: 'your_password', 
   database: 'todo_db'
 };
 
@@ -16,9 +19,19 @@ async function connectWithRetry() {
     try {
       const connection = await mysql.createConnection(dbConfig);
       console.log('Connected to MySQL');
-      await connection.execute('CREATE TABLE IF NOT EXISTS task (id INT AUTO_INCREMENT PRIMARY KEY, title VARCHAR(255), description TEXT, completed BOOLEAN DEFAULT FALSE, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)');
+      // Add date column to your table
+      await connection.execute(`
+        CREATE TABLE IF NOT EXISTS task (
+          id INT AUTO_INCREMENT PRIMARY KEY, 
+          title VARCHAR(255), 
+          description TEXT, 
+          date DATE,
+          completed BOOLEAN DEFAULT FALSE, 
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
       console.log('Task table created or already exists');
-      connection.end(); // Close initial connection
+      connection.end();
       break;
     } catch (err) {
       console.error('Database connection failed:', err.message);
@@ -33,10 +46,26 @@ async function connectWithRetry() {
 
   const pool = mysql.createPool(dbConfig);
 
+  // Fix the POST endpoint to include date
   app.post('/tasks', async (req, res) => {
-    const { title, description } = req.body;
-    const [result] = await pool.execute('INSERT INTO task (title, description) VALUES (?, ?)', [title, description]);
-    res.send({ id: result.insertId });
+    try {
+      const { title, description, date } = req.body;
+      const [result] = await pool.execute(
+        'INSERT INTO task (title, description, date) VALUES (?, ?, ?)', 
+        [title, description, date]
+      );
+      res.send({ 
+        id: result.insertId,
+        title,
+        description, 
+        date,
+        completed: false,
+        created_at: new Date()
+      });
+    } catch (error) {
+      console.error('Error creating task:', error);
+      res.status(500).send({ error: 'Failed to create task' });
+    }
   });
 
   app.get('/tasks', async (req, res) => {

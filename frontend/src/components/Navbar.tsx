@@ -1,4 +1,4 @@
-import { CalendarDays, Bell, Search } from "lucide-react";
+import {  Bell, Search } from "lucide-react";
 
 export default function Navbar() {
   return (
@@ -10,7 +10,7 @@ export default function Navbar() {
         </h1>
 
         {/* Search Bar */}
-        <div className="flex items-center w-full md:w-2/4 relative order-2 md:order-none mb-2 md:mb-0">
+        <div className="flex items-center w-full md:w-2/4 relative order-2 md:order-0 mb-2 md:mb-0">
           <input
             type="text"
             placeholder="Search your task here..."

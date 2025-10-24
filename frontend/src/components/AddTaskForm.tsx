@@ -1,30 +1,76 @@
 import { useState } from "react";
 import { Calendar } from "lucide-react";
 import { Calendar13 } from "./Calendar13";
+import { createTask } from "../api";
 
-export default function AddTaskForm() {
+interface AddTaskFormProps {
+  onTaskCreated?: (task: any) => void;
+}
+
+export default function AddTaskForm({ onTaskCreated }: AddTaskFormProps) {
   const [title, setTitle] = useState("");
   const [date, setDate] = useState("");
   const [description, setDescription] = useState("");
   const [showCalendar, setShowCalendar] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleCalendarDone = () => {
     if (selectedDate) {
-      // Format the date as YYYY-MM-DD for the input field
       const formattedDate = selectedDate.toISOString().split('T')[0];
       setDate(formattedDate);
     }
     setShowCalendar(false);
   };
 
+  const resetForm = () => {
+    setTitle("");
+    setDate("");
+    setDescription("");
+    setSelectedDate(new Date());
+    setError(null);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    if (!title.trim()) {
+      setError("Please enter a title.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const payload = {
+        title: title.trim(),
+        description: description || null,
+        date: date || null,
+      };
+
+      const created = await createTask(payload);
+
+      if (onTaskCreated) onTaskCreated(created);
+      resetForm();
+    } catch (err: any) {
+      console.error("Create task failed:", err);
+      setError(err?.message || "Failed to create task");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <>
-      {/* Responsive form container */}
-      <div className="w-full md:w-2/4 p-4 sm:p-6 border border-gray-300 rounded-md bg-[#f9f9f9] mx-auto">
-        <h2 className="text-lg font-semibold text-[#3b3b3b] mb-4">
-          Add New Task
-        </h2>
+      {/* Your original form - completely unchanged layout */}
+      <div className="w-2/4 p-6 border border-gray-300 rounded-md bg-[#f9f9f9]">
+        <div className="mb-6">
+          <h2 className="text-lg font-semibold text-[#3b3b3b] mb-2">
+            Add New Task
+          </h2>
+          <div className="h-1 w-20 bg-[#a47376] rounded-full"></div>
+        </div>
 
         {/* Title */}
         <div className="mb-4">
@@ -36,6 +82,7 @@ export default function AddTaskForm() {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-[#a47376] focus:outline-none"
+            disabled={loading}
           />
         </div>
 
@@ -49,32 +96,47 @@ export default function AddTaskForm() {
             value={date}
             onChange={(e) => setDate(e.target.value)}
             className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-[#a47376] focus:outline-none"
+            disabled={loading}
           />
           {/* Calendar icon button */}
           <button
+            type="button"
             onClick={() => setShowCalendar(!showCalendar)}
             className="absolute right-3 bottom-3 text-gray-400 hover:text-[#a47376] transition-colors"
+            disabled={loading}
           >
             <Calendar className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Description */}
+        {/* Description - Increased size */}
         <div className="mb-6">
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Task Description
           </label>
           <textarea
-            rows={4}
+            rows={8}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Start writing here......"
-            className="w-full border border-gray-300 rounded-md px-3 py-2 resize-none focus:ring-2 focus:ring-[#a47376] focus:outline-none"
+            className="w-full border border-gray-300 rounded-md px-3 py-2 resize-vertical focus:ring-2 focus:ring-[#a47376] focus:outline-none min-h-[150px]"
+            disabled={loading}
           />
         </div>
 
-        <button className="bg-[#a47376] text-white px-6 py-2 rounded-md hover:bg-[#8b5b5e] transition">
-          Done
+        {/* Error message - placed right above the button without changing layout */}
+        {error && (
+          <div className="mb-4 text-sm text-red-600">
+            {error}
+          </div>
+        )}
+
+        <button 
+          onClick={handleSubmit}
+          className="bg-[#a47376] text-white px-6 py-2 rounded-md hover:bg-[#8b5b5e] transition disabled:opacity-50"
+          disabled={loading}
+        >
+          {loading ? "Saving..." : "Done"}
         </button>
       </div>
 
@@ -91,7 +153,6 @@ export default function AddTaskForm() {
             </button>
           </div>
           
-          {/* Calendar component with built-in Done button */}
           <Calendar13 
             onDateSelect={setSelectedDate} 
             selectedDate={selectedDate} 

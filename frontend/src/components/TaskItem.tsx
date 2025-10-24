@@ -1,19 +1,55 @@
+// src/components/taskItem.tsx
 import { Edit, Trash } from "lucide-react";
 
-export default function TaskItem() {
+interface TaskItemProps {
+  task?: any; // Make task optional with ?
+}
+
+export default function TaskItem({ task }: TaskItemProps) {
+  // If no task provided, use demo data
+  const taskData = task || {
+    id: 1,
+    title: "Attend Nischal's Birthday Party",
+    description: "Buy gifts on the way and pick up cake from the bakery. (6 PM | Fresh Elements)...",
+    date: "2023-06-24",
+    created_at: "2023-06-20"
+  };
+
+  const formatDate = (dateString: string) => {
+    if (!dateString) return '';
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-GB');
+    } catch (error) {
+      return dateString;
+    }
+  };
+
+  const formatCreatedAt = (createdAt: string) => {
+    if (!createdAt) return '';
+    try {
+      const date = new Date(createdAt);
+      return `Created on: ${date.toLocaleDateString('en-GB')}`;
+    } catch (error) {
+      return `Created: ${createdAt}`;
+    }
+  };
+
   return (
     <div className="bg-white shadow-md rounded-lg border border-gray-200 px-4 sm:px-5 py-4 mb-4">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-        <div>
+        <div className="flex-1">
           <h3 className="font-semibold text-gray-800 mb-1">
-            Attend Nischal’s Birthday Party
+            {taskData.title}
           </h3>
-          <p className="text-gray-500 text-sm">
-            Buy gifts on the way and pick up cake from the bakery. (6 PM | Fresh
-            Elements)...
-          </p>
+          {taskData.description && (
+            <p className="text-gray-500 text-sm">
+              {taskData.description}
+            </p>
+          )}
           <p className="text-xs text-gray-400 mt-2">
-            Created on: 20/06/2023
+            {formatCreatedAt(taskData.created_at)}
+            {taskData.date && ` • Due: ${formatDate(taskData.date)}`}
           </p>
         </div>
 
