@@ -1,8 +1,8 @@
-import TaskItem from "./TaskItem";
+import TaskItem from "./taskItem"
 
 export default function TaskList() {
   return (
-    <div className="w-2/4 bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+    <div className="w-full md:w-2/4 bg-white rounded-xl shadow-lg p-4 sm:p-6 border border-gray-100 mx-auto">
       <h2 className="text-[#a47376] font-semibold text-lg mb-4 flex items-center gap-2">
         <img 
           src="https://img.icons8.com/?size=100&id=t4MmyHJtYtvk&format=png&color=000000" 

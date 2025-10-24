@@ -3,14 +3,14 @@ import { CalendarDays, Bell, Search } from "lucide-react";
 export default function Navbar() {
   return (
     <header className="bg-[#cbb5b0] w-full py-4 shadow-sm">
-      <div className="max-w-7xl mx-auto flex items-center justify-between px-8">
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between px-4 sm:px-6 md:px-8 gap-4 md:gap-0">
         {/* Left Title */}
-        <h1 className="text-2xl font-semibold text-[#6b4b4b]">
+        <h1 className="text-2xl font-semibold text-[#6b4b4b] mb-2 md:mb-0">
           Just5 <span className="text-gray-100 font-bold">To-Do</span>
         </h1>
 
         {/* Search Bar */}
-        <div className="flex items-center w-2/4 relative">
+        <div className="flex items-center w-full md:w-2/4 relative order-2 md:order-none mb-2 md:mb-0">
           <input
             type="text"
             placeholder="Search your task here..."
@@ -22,8 +22,11 @@ export default function Navbar() {
         {/* Right Section */}
         <div className="flex items-center gap-4 text-white">
           <Bell className="w-5 h-5" />
-          <CalendarDays className="w-5 h-5" />
-          <p className="text-sm font-medium">Tuesday<br />25/06/2023</p>
+          <p className="text-sm font-medium text-center md:text-right">
+            Tuesday
+            <br />
+            25/06/2023
+          </p>
         </div>
       </div>
     </header>

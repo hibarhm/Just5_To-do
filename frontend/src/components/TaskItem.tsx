@@ -2,8 +2,8 @@ import { Edit, Trash } from "lucide-react";
 
 export default function TaskItem() {
   return (
-    <div className="bg-white shadow-md rounded-lg border border-gray-200 px-5 py-4 mb-4">
-      <div className="flex justify-between items-start">
+    <div className="bg-white shadow-md rounded-lg border border-gray-200 px-4 sm:px-5 py-4 mb-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
         <div>
           <h3 className="font-semibold text-gray-800 mb-1">
             Attend Nischal’s Birthday Party
@@ -17,7 +17,7 @@ export default function TaskItem() {
           </p>
         </div>
 
-        <div className="flex gap-3 items-center">
+        <div className="flex gap-2 sm:gap-3 items-center">
           <button className="p-1 text-[#a47376] hover:text-[#8b5b5e]">
             <Edit size={18} />
           </button>
