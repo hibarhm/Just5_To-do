@@ -1,25 +1,29 @@
 import { useEffect, useState } from "react";
 import TaskItem from "./taskItem";
-import { getTasks } from "../api";
-import { groupTasksByDate } from "../group/groupTasksByDate"; // ✅ new helper import
+import { getTasks, deleteTask } from "../api";
+import { groupTasksByDate } from "../group/groupTasksByDate";
+
+// Toast Component
+const Toast = ({ message, onClose }: { message: string; onClose: () => void }) => {
+  setTimeout(onClose, 2000);
+  return (
+    <div className="fixed top-20 right-6 bg-[#a47376] text-white px-4 py-2 rounded-md shadow-md text-sm z-50 animate-fadeInOut">
+      {message}
+    </div>
+  );
+};
 
 export default function TaskList() {
-  const [tasks, setTasks] = useState<any[]>([]); // All incomplete tasks from backend
-  const [displayedTasks, setDisplayedTasks] = useState<any[]>([]); // Up to 5 shown
+  const [tasks, setTasks] = useState<any[]>([]);
+  const [displayedTasks, setDisplayedTasks] = useState<any[]>([]);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Fetch tasks from backend
   const fetchTasks = async () => {
     try {
       const data = await getTasks();
-
-      // Filter incomplete tasks and sort by due date ascending
       const incomplete = data
         .filter((t) => !t.completed)
-        .sort(
-          (a, b) =>
-            new Date(a.date).getTime() - new Date(b.date).getTime()
-        );
-
+        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
       setTasks(incomplete);
       setDisplayedTasks(incomplete.slice(0, 5));
     } catch (err) {
@@ -31,17 +35,26 @@ export default function TaskList() {
     fetchTasks();
   }, []);
 
-  // Handle Done button click
   const handleDone = (id: number) => {
-    // Remove task from all tasks
     const updatedTasks = tasks.filter((t) => t.id !== id);
     setTasks(updatedTasks);
-
-    // Update displayed tasks (show up to 5 upcoming)
     setDisplayedTasks(updatedTasks.slice(0, 5));
+    setToastMessage("Task marked as completed!");
   };
 
-  // ✅ Group tasks by date for display
+  const handleDelete = async (id: number, title: string) => {
+    try {
+      await deleteTask(id);
+      const updatedTasks = tasks.filter((t) => t.id !== id);
+      setTasks(updatedTasks);
+      setDisplayedTasks(updatedTasks.slice(0, 5));
+      setToastMessage(`Task "${title}" deleted successfully!`);
+    } catch (err) {
+      console.error("Failed to delete task:", err);
+      setToastMessage(`Failed to delete task "${title}".`);
+    }
+  };
+
   const grouped = groupTasksByDate(displayedTasks);
 
   return (
@@ -57,30 +70,33 @@ export default function TaskList() {
 
       <p className="text-gray-500 text-sm mb-2">Upcoming Tasks</p>
 
-      {/* Scrollable task list container */}
       <div className="flex-1 overflow-y-auto max-h-[70vh] pr-2">
         {displayedTasks.length === 0 ? (
           <p className="text-gray-400 text-sm">No tasks available.</p>
         ) : (
           Object.keys(grouped).map((dateKey) => (
             <div key={dateKey} className="mb-6">
-              {/* 📅 Date header */}
               <div className="flex items-center gap-2 mb-3">
                 <div className="h-[1px] bg-gray-200 flex-1" />
-                <p className="text-xs text-gray-500 whitespace-nowrap">
-                  {dateKey}
-                </p>
+                <p className="text-xs text-gray-500 whitespace-nowrap">{dateKey}</p>
                 <div className="h-[1px] bg-gray-200 flex-1" />
               </div>
 
-              {/* Render all tasks under this date */}
               {grouped[dateKey].map((task) => (
-                <TaskItem key={task.id} task={task} onDone={handleDone} />
+                <TaskItem
+                  key={task.id}
+                  task={task}
+                  onDone={handleDone}
+                  onDelete={() => handleDelete(task.id, task.title)}
+                />
               ))}
             </div>
           ))
         )}
       </div>
+
+      {/* Toast */}
+      {toastMessage && <Toast message={toastMessage} onClose={() => setToastMessage(null)} />}
     </div>
   );
 }

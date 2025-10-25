@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Edit, Trash } from "lucide-react";
 import { completeTask } from "../api";
 
@@ -9,26 +10,46 @@ interface TaskItemProps {
     date?: string | null;
     completed: boolean;
   };
-  onDone?: (id: number) => void; // callback to remove task from frontend
+  onDone?: (id: number) => void;
+  onDelete?: () => void; // ✅ parent handles toast
 }
 
-export default function TaskItem({ task, onDone }: TaskItemProps) {
-  const formatDate = (dateString: string) => {
-    if (!dateString) return "";
+export default function TaskItem({ task, onDone, onDelete }: TaskItemProps) {
+  const [loadingComplete, setLoadingComplete] = useState(false);
+  const [loadingDelete, setLoadingDelete] = useState(false);
+
+  const handleDoneClick = async () => {
+    if (loadingComplete || task.completed) return;
+    setLoadingComplete(true);
     try {
-      const date = new Date(dateString);
-      return date.toLocaleDateString("en-GB"); // DD/MM/YYYY
-    } catch {
-      return dateString;
+      await completeTask(task.id);
+      if (onDone) onDone(task.id);
+    } catch (err) {
+      console.error("Failed to mark task done:", err);
+    } finally {
+      setLoadingComplete(false);
     }
   };
 
-  const handleDoneClick = async () => {
+  const handleDeleteClick = async () => {
+    if (loadingDelete) return;
+    setLoadingDelete(true);
     try {
-      await completeTask(task.id); // mark completed in backend
-      if (onDone) onDone(task.id); // remove from frontend
+      if (onDelete) await onDelete();
     } catch (err) {
-      console.error("Failed to mark task done:", err);
+      console.error("Failed to delete task:", err);
+    } finally {
+      setLoadingDelete(false);
+    }
+  };
+
+  const formatDate = (dateString?: string | null) => {
+    if (!dateString) return "";
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString("en-GB");
+    } catch {
+      return dateString;
     }
   };
 
@@ -49,7 +70,6 @@ export default function TaskItem({ task, onDone }: TaskItemProps) {
           >
             {task.title}
           </h3>
-
           {task.description && (
             <p
               className={`text-sm ${
@@ -59,7 +79,6 @@ export default function TaskItem({ task, onDone }: TaskItemProps) {
               {task.description}
             </p>
           )}
-
           {task.date && (
             <p className="text-xs text-gray-400 mt-2">
               Due: {formatDate(task.date)}
@@ -72,7 +91,15 @@ export default function TaskItem({ task, onDone }: TaskItemProps) {
             <Edit size={18} />
           </button>
 
-          <button className="p-1 text-[#a47376] hover:text-[#8b5b5e] transition">
+          <button
+            onClick={handleDeleteClick}
+            className={`p-1 transition ${
+              loadingDelete
+                ? "text-gray-400 cursor-not-allowed"
+                : "text-[#a47376] hover:text-red-900"
+            }`}
+            disabled={loadingDelete}
+          >
             <Trash size={18} />
           </button>
 
@@ -83,9 +110,13 @@ export default function TaskItem({ task, onDone }: TaskItemProps) {
                 ? "bg-green-200 text-green-700 cursor-not-allowed"
                 : "bg-[#a47376] text-white hover:bg-[#8b5b5e]"
             }`}
-            disabled={task.completed}
+            disabled={task.completed || loadingComplete}
           >
-            {task.completed ? "Done ✓" : "Done"}
+            {task.completed
+              ? "Done ✓"
+              : loadingComplete
+              ? "Saving..."
+              : "Done"}
           </button>
         </div>
       </div>

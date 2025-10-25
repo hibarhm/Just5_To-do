@@ -116,11 +116,6 @@ async function connectWithRetry() {
       res.status(500).send({ error: 'Failed to fetch tasks' });
     }
   });
-  
-  // 🟢 Health check endpoint
-  app.get("/", (req, res) => {
-    res.send("✅ Backend is running!");
-  });
 
   // 🟢 Mark task as completed
   app.put('/tasks/:id', async (req, res) => {
@@ -143,6 +138,31 @@ async function connectWithRetry() {
       console.error('Error updating task:', error);
       res.status(500).send({ error: 'Failed to update task' });
     }
+  });
+
+  // 🟢 Delete a task
+  app.delete('/tasks/:id', async (req, res) => {
+    const id = Number(req.params.id.toString().trim()); // ⚡ trim to remove extra spaces/newlines
+    try {
+      const [result] = await pool.execute('DELETE FROM task WHERE id = ?', [id]);
+
+      if (result.affectedRows === 0) {
+        return res.status(404).send({ error: 'Task not found' });
+      }
+
+      // 🔹 Emit deletion event to all clients
+      io.emit('taskDeleted', { id });
+
+      res.send({ success: true });
+    } catch (err) {
+      console.error('Error deleting task:', err);
+      res.status(500).send({ error: 'Failed to delete task' });
+    }
+  });
+
+  // 🟢 Health check endpoint
+  app.get("/", (req, res) => {
+    res.send("✅ Backend is running!");
   });
 
   // 🔹 Start server with Socket.IO

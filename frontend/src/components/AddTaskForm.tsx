@@ -85,7 +85,7 @@ export default function AddTaskForm({ onTaskCreated }: AddTaskFormProps) {
   return (
     <>
       {/* Form Container */}
-      <div className="w-2/4 p-6 border border-gray-300 rounded-md bg-[#f9f9f9]">
+      <div className="w-full md:w-2/4 p-4 sm:p-6 border border-gray-300 rounded-md bg-[#f9f9f9] mx-auto">
         <div className="mb-6">
           <h2 className="text-lg font-semibold text-[#3b3b3b] mb-2">Add New Task</h2>
           <div className="h-1 w-20 bg-[#a47376] rounded-full"></div>
