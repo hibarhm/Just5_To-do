@@ -1,6 +1,31 @@
-import { CalendarDays, Bell, Search } from "lucide-react";
+import { CalendarDays, Search } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export default function Navbar() {
+  const [currentDate, setCurrentDate] = useState<string>("");
+
+  useEffect(() => {
+    const updateDate = () => {
+      const now = new Date();
+
+      // Format day name, e.g., "Tuesday"
+      const dayName = now.toLocaleDateString("en-GB", { weekday: "long" });
+
+      // Format date as DD/MM/YYYY
+      const day = String(now.getDate()).padStart(2, "0");
+      const month = String(now.getMonth() + 1).padStart(2, "0");
+      const year = now.getFullYear();
+      const formattedDate = `${day}/${month}/${year}`;
+
+      setCurrentDate(`${dayName}, ${formattedDate}`);
+    };
+
+    updateDate(); // initial call
+
+    const interval = setInterval(updateDate, 60 * 1000); // update every minute
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <header className="bg-[#cbb5b0] w-full py-4 shadow-sm">
       <div className="max-w-7xl mx-auto flex items-center justify-between px-8">
@@ -21,8 +46,7 @@ export default function Navbar() {
 
         {/* Right Section */}
         <div className="flex items-center gap-4 text-white">
-          <Bell className="w-5 h-5" />
-          <p className="text-sm font-medium">Tuesday<br />25/06/2023</p>
+          <p className="text-sm font-medium">{currentDate}</p>
         </div>
       </div>
     </header>
