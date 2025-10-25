@@ -3,6 +3,18 @@ import { Calendar } from "lucide-react";
 import { Calendar13 } from "./Calendar13";
 import { createTask } from "../api";
 
+// Toast Component at top-right
+const Toast = ({ message, onClose }: { message: string; onClose: () => void }) => {
+  // Auto close after 2 seconds
+  setTimeout(onClose, 2000);
+
+  return (
+    <div className="fixed top-20 right-6 bg-[#a47376] text-white px-4 py-2 rounded-md shadow-md text-sm z-50 animate-fadeInOut">
+      {message}
+    </div>
+  );
+};
+
 interface AddTaskFormProps {
   onTaskCreated?: (task: any) => void;
 }
@@ -15,6 +27,7 @@ export default function AddTaskForm({ onTaskCreated }: AddTaskFormProps) {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const handleCalendarDone = () => {
     if (selectedDate) {
@@ -53,6 +66,9 @@ export default function AddTaskForm({ onTaskCreated }: AddTaskFormProps) {
 
       if (onTaskCreated) onTaskCreated(created);
       resetForm();
+
+      // ✅ Show toast in top-right
+      setToastMessage("Task Added");
     } catch (err: any) {
       console.error("Create task failed:", err);
       setError(err?.message || "Failed to create task");
@@ -63,20 +79,16 @@ export default function AddTaskForm({ onTaskCreated }: AddTaskFormProps) {
 
   return (
     <>
-      {/* Your original form - completely unchanged layout */}
+      {/* Form Container */}
       <div className="w-2/4 p-6 border border-gray-300 rounded-md bg-[#f9f9f9]">
         <div className="mb-6">
-          <h2 className="text-lg font-semibold text-[#3b3b3b] mb-2">
-            Add New Task
-          </h2>
+          <h2 className="text-lg font-semibold text-[#3b3b3b] mb-2">Add New Task</h2>
           <div className="h-1 w-20 bg-[#a47376] rounded-full"></div>
         </div>
 
         {/* Title */}
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Title
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
           <input
             type="text"
             value={title}
@@ -88,9 +100,7 @@ export default function AddTaskForm({ onTaskCreated }: AddTaskFormProps) {
 
         {/* Date */}
         <div className="mb-4 relative">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Date
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
           <input
             type="date"
             value={date}
@@ -98,7 +108,6 @@ export default function AddTaskForm({ onTaskCreated }: AddTaskFormProps) {
             className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-[#a47376] focus:outline-none"
             disabled={loading}
           />
-          {/* Calendar icon button */}
           <button
             type="button"
             onClick={() => setShowCalendar(!showCalendar)}
@@ -109,11 +118,9 @@ export default function AddTaskForm({ onTaskCreated }: AddTaskFormProps) {
           </button>
         </div>
 
-        {/* Description - Increased size */}
+        {/* Description */}
         <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Task Description
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Task Description</label>
           <textarea
             rows={8}
             value={description}
@@ -124,14 +131,11 @@ export default function AddTaskForm({ onTaskCreated }: AddTaskFormProps) {
           />
         </div>
 
-        {/* Error message - placed right above the button without changing layout */}
-        {error && (
-          <div className="mb-4 text-sm text-red-600">
-            {error}
-          </div>
-        )}
+        {/* Error */}
+        {error && <div className="mb-4 text-sm text-red-600">{error}</div>}
 
-        <button 
+        {/* Submit */}
+        <button
           onClick={handleSubmit}
           className="bg-[#a47376] text-white px-6 py-2 rounded-md hover:bg-[#8b5b5e] transition disabled:opacity-50"
           disabled={loading}
@@ -152,14 +156,17 @@ export default function AddTaskForm({ onTaskCreated }: AddTaskFormProps) {
               ✕
             </button>
           </div>
-          
-          <Calendar13 
-            onDateSelect={setSelectedDate} 
-            selectedDate={selectedDate} 
+
+          <Calendar13
+            onDateSelect={setSelectedDate}
+            selectedDate={selectedDate}
             onDone={handleCalendarDone}
           />
         </div>
       )}
+
+      {/* Toast */}
+      {toastMessage && <Toast message={toastMessage} onClose={() => setToastMessage(null)} />}
     </>
   );
 }

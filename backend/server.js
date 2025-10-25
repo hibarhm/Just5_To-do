@@ -3,8 +3,16 @@ const mysql = require('mysql2/promise');
 const cors = require('cors'); 
 const app = express();
 
-// Add CORS middleware
-app.use(cors());
+// 🟢 Enable CORS properly (frontend: 5173)
+app.use(
+  cors({
+    origin: "http://localhost:5173", // Allow your React frontend
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+  })
+);
+
+// Middleware to parse JSON
 app.use(express.json());
 
 const dbConfig = {
@@ -14,12 +22,14 @@ const dbConfig = {
   database: 'todo_db'
 };
 
+// 🔁 Keep retrying DB connection until ready
 async function connectWithRetry() {
   while (true) {
     try {
       const connection = await mysql.createConnection(dbConfig);
-      console.log('Connected to MySQL');
-      // Add date column to your table
+      console.log('✅ Connected to MySQL');
+
+      // Ensure task table exists
       await connection.execute(`
         CREATE TABLE IF NOT EXISTS task (
           id INT AUTO_INCREMENT PRIMARY KEY, 
@@ -30,11 +40,11 @@ async function connectWithRetry() {
           created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
       `);
-      console.log('Task table created or already exists');
+      console.log('🗂️ Task table created or already exists');
       connection.end();
       break;
     } catch (err) {
-      console.error('Database connection failed:', err.message);
+      console.error('❌ Database connection failed:', err.message);
       console.log('Retrying in 5 seconds...');
       await new Promise(resolve => setTimeout(resolve, 5000));
     }
@@ -46,7 +56,7 @@ async function connectWithRetry() {
 
   const pool = mysql.createPool(dbConfig);
 
-  // Fix the POST endpoint to include date
+  // 🟢 Create a new task
   app.post('/tasks', async (req, res) => {
     try {
       const { title, description, date } = req.body;
@@ -68,16 +78,36 @@ async function connectWithRetry() {
     }
   });
 
+  // 🟢 Fetch recent incomplete tasks
   app.get('/tasks', async (req, res) => {
-    const [rows] = await pool.execute('SELECT * FROM task WHERE completed = FALSE ORDER BY created_at DESC LIMIT 5');
-    res.send(rows);
+    try {
+      const [rows] = await pool.execute(
+        'SELECT * FROM task WHERE completed = FALSE ORDER BY created_at DESC LIMIT 5'
+      );
+      res.send(rows);
+    } catch (error) {
+      console.error('Error fetching tasks:', error);
+      res.status(500).send({ error: 'Failed to fetch tasks' });
+    }
+  });
+  
+  // 🟢 Health check endpoint
+  app.get("/", (req, res) => {
+    res.send("✅ Backend is running!");
   });
 
+  // 🟢 Mark task as completed
   app.put('/tasks/:id', async (req, res) => {
     const id = req.params.id;
-    await pool.execute('UPDATE task SET completed = TRUE WHERE id = ?', [id]);
-    res.send({ success: true });
+    try {
+      await pool.execute('UPDATE task SET completed = TRUE WHERE id = ?', [id]);
+      res.send({ success: true });
+    } catch (error) {
+      console.error('Error updating task:', error);
+      res.status(500).send({ error: 'Failed to update task' });
+    }
   });
 
-  app.listen(3000, () => console.log('Server running on port 3000'));
+  // 🟢 Start server
+  app.listen(3000, () => console.log('🚀 Server running on port 3000'));
 })();

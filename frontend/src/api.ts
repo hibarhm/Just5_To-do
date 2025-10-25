@@ -1,26 +1,33 @@
-// src/api.ts
-export const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:3000";
+export const API_BASE = "http://localhost:3000";
 
-export async function createTask(payload: {
-  title: string;
-  description?: string | null;
-  date?: string | null;
-}) {
-  const res = await fetch(`${API_BASE}/api/tasks`, {
+// Get all tasks
+export async function getTasks() {
+  const res = await fetch(`${API_BASE}/tasks`);
+  if (!res.ok) throw new Error("Failed to fetch tasks");
+  const data = await res.json();
+  return data.map(task => ({ ...task, done: task.completed }));
+}
+
+// Create task
+export async function createTask(task: { title: string; description?: string; date?: string }) {
+  const res = await fetch(`${API_BASE}/tasks`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
+    body: JSON.stringify(task),
   });
+  if (!res.ok) throw new Error("Failed to create task");
+  const data = await res.json();
+  return { ...data, done: data.completed };
+}
 
-  if (!res.ok) {
-    // try to parse error message
-    let err = "Server error";
-    try {
-      const j = await res.json();
-      err = j.error || j.message || err;
-    } catch {}
-    throw new Error(err);
-  }
+// Complete task
+export async function completeTask(id: number) {
+  const res = await fetch(`${API_BASE}/tasks/${id}`, { method: "PUT" });
+  if (!res.ok) throw new Error("Failed to mark task completed");
+}
 
-  return res.json(); // created task row
+// Delete task
+export async function deleteTask(id: number) {
+  const res = await fetch(`${API_BASE}/tasks/${id}`, { method: "DELETE" });
+  if (!res.ok) throw new Error("Failed to delete task");
 }
