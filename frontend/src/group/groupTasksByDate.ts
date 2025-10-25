@@ -23,7 +23,6 @@ export function groupTasksByDate(tasks: any[]) {
   const groups: Record<string, any[]> = {};
 
   for (const task of tasks) {
-    // handle undefined/null dates safely
     if (!task.date) continue;
     const dateObj = new Date(task.date);
     const label = formatLabel(dateObj);

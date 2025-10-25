@@ -3,7 +3,7 @@ services:
   db:
     image: mysql:latest
     environment:
-      - MYSQL_ROOT_PASSWORD=your_password # Replace with your chosen password
+      - MYSQL_ROOT_PASSWORD=your_password 
       - MYSQL_DATABASE=todo_db
     ports:
       - "3306:3306"
@@ -27,7 +27,7 @@ services:
   frontend:
     build: ../frontend
     ports:
-      - "5173:5173"  # ← ADD THIS PORT MAPPING
+      - "5173:5173"  
     depends_on:
       - backend
     environment:

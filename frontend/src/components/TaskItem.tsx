@@ -11,7 +11,7 @@ interface TaskItemProps {
     completed: boolean;
   };
   onDone?: (id: number) => void;
-  onDelete?: () => void; // ✅ parent handles toast
+  onDelete?: () => void; 
 }
 
 export default function TaskItem({ task, onDone, onDelete }: TaskItemProps) {

@@ -3,9 +3,8 @@ import { Calendar } from "lucide-react";
 import { Calendar13 } from "./Calendar13";
 import { createTask } from "../api";
 
-// Toast Component at top-right
+// Toast Component 
 const Toast = ({ message, onClose }: { message: string; onClose: () => void }) => {
-  // Auto close after 2 seconds
   setTimeout(onClose, 2000);
 
   return (
@@ -31,7 +30,6 @@ export default function AddTaskForm({ onTaskCreated }: AddTaskFormProps) {
 
   const handleCalendarDone = () => {
     if (selectedDate) {
-      // FIX: Use manual formatting instead of toISOString() to avoid timezone issues
       const year = selectedDate.getFullYear();
       const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
       const day = String(selectedDate.getDate()).padStart(2, '0');
@@ -63,8 +61,8 @@ export default function AddTaskForm({ onTaskCreated }: AddTaskFormProps) {
     try {
       const payload = {
         title: title.trim(),
-        description: description || null,
-        date: date || null,
+        description: description ? description : undefined,
+        date: date ? date : undefined,
       };
 
       const created = await createTask(payload);
@@ -72,7 +70,7 @@ export default function AddTaskForm({ onTaskCreated }: AddTaskFormProps) {
       if (onTaskCreated) onTaskCreated(created);
       resetForm();
 
-      // ✅ Show toast in top-right
+      
       setToastMessage("Task Added");
     } catch (err: any) {
       console.error("Create task failed:", err);

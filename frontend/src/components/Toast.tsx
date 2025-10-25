@@ -1,9 +1,9 @@
-// src/components/Toast.tsx
+
 import { useEffect } from "react";
 
 interface ToastProps {
   message: string;
-  duration?: number; // in milliseconds
+  duration?: number; 
   onClose: () => void;
 }
 

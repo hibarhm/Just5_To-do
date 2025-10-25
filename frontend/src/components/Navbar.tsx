@@ -8,7 +8,7 @@ export default function Navbar() {
     const updateDate = () => {
       const now = new Date();
 
-      // Format day name, e.g., "Tuesday"
+     
       const dayName = now.toLocaleDateString("en-GB", { weekday: "long" });
 
       // Format date as DD/MM/YYYY
@@ -20,9 +20,9 @@ export default function Navbar() {
       setCurrentDate(`${dayName}, ${formattedDate}`);
     };
 
-    updateDate(); // initial call
+    updateDate(); 
 
-    const interval = setInterval(updateDate, 60 * 1000); // update every minute
+    const interval = setInterval(updateDate, 60 * 1000); 
     return () => clearInterval(interval);
   }, []);
 

@@ -1,6 +1,6 @@
-export const API_BASE = "http://localhost:3000"; // ✅ your backend port
+export const API_BASE = "http://localhost:3000"; 
 
-// Get all tasks
+// Get tasks
 export async function getTasks() {
   const res = await fetch(`${API_BASE}/tasks`);
   if (!res.ok) throw new Error("Failed to fetch tasks");
@@ -24,17 +24,17 @@ export async function createTask(task: { title: string; description?: string; da
 export async function completeTask(id: number) {
   const res = await fetch(`${API_BASE}/tasks/${id}`, { method: "PUT" });
   if (!res.ok) throw new Error("Failed to mark task completed");
-  return await res.json(); // ✅ keep return consistency
+  return await res.json(); 
 }
 
 // Delete task
 export async function deleteTask(id: number | string) {
-  // ✅ ensure id is clean string/number
+  
   const cleanId = id.toString().trim();
 
   const res = await fetch(`${API_BASE}/tasks/${cleanId}`, {
     method: "DELETE",
-    headers: { "Content-Type": "application/json" }, // consistent with POST
+    headers: { "Content-Type": "application/json" }, 
   });
 
   if (!res.ok) {
@@ -43,5 +43,5 @@ export async function deleteTask(id: number | string) {
   }
 
   const data = await res.json();
-  return data; // return backend response for consistency
+  return data; 
 }
