@@ -1,67 +1,91 @@
-// src/components/taskItem.tsx
 import { Edit, Trash } from "lucide-react";
+import { completeTask } from "../api";
 
 interface TaskItemProps {
-  task?: any; // Make task optional with ?
+  task: {
+    id: number;
+    title: string;
+    description?: string | null;
+    date?: string | null;
+    completed: boolean;
+  };
+  onDone?: (id: number) => void; // callback to remove task from frontend
 }
 
-export default function TaskItem({ task }: TaskItemProps) {
-  // If no task provided, use demo data
-  const taskData = task || {
-    id: 1,
-    title: "Attend Nischal's Birthday Party",
-    description: "Buy gifts on the way and pick up cake from the bakery. (6 PM | Fresh Elements)...",
-    date: "2023-06-24",
-    created_at: "2023-06-20"
-  };
-
+export default function TaskItem({ task, onDone }: TaskItemProps) {
   const formatDate = (dateString: string) => {
-    if (!dateString) return '';
+    if (!dateString) return "";
     try {
       const date = new Date(dateString);
-      return date.toLocaleDateString('en-GB');
-    } catch (error) {
+      return date.toLocaleDateString("en-GB"); // DD/MM/YYYY
+    } catch {
       return dateString;
     }
   };
 
-  const formatCreatedAt = (createdAt: string) => {
-    if (!createdAt) return '';
+  const handleDoneClick = async () => {
     try {
-      const date = new Date(createdAt);
-      return `Created on: ${date.toLocaleDateString('en-GB')}`;
-    } catch (error) {
-      return `Created: ${createdAt}`;
+      await completeTask(task.id); // mark completed in backend
+      if (onDone) onDone(task.id); // remove from frontend
+    } catch (err) {
+      console.error("Failed to mark task done:", err);
     }
   };
 
   return (
-    <div className="bg-white shadow-md rounded-lg border border-gray-200 px-4 sm:px-5 py-4 mb-4">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-        <div className="flex-1">
-          <h3 className="font-semibold text-gray-800 mb-1">
-            {taskData.title}
+    <div
+      className={`rounded-2xl border border-gray-200 px-5 py-4 mb-4 shadow-sm transition-all duration-200 ${
+        task.completed
+          ? "bg-green-50 opacity-80"
+          : "bg-white hover:shadow-md hover:-translate-y-[2px]"
+      }`}
+    >
+      <div className="flex justify-between items-start">
+        <div>
+          <h3
+            className={`font-semibold text-gray-800 mb-1 text-[15px] ${
+              task.completed ? "line-through text-gray-400" : ""
+            }`}
+          >
+            {task.title}
           </h3>
-          {taskData.description && (
-            <p className="text-gray-500 text-sm">
-              {taskData.description}
+
+          {task.description && (
+            <p
+              className={`text-sm ${
+                task.completed ? "text-gray-400" : "text-gray-600"
+              }`}
+            >
+              {task.description}
             </p>
           )}
-          <p className="text-xs text-gray-400 mt-2">
-            {formatCreatedAt(taskData.created_at)}
-            {taskData.date && ` • Due: ${formatDate(taskData.date)}`}
-          </p>
+
+          {task.date && (
+            <p className="text-xs text-gray-400 mt-2">
+              Due: {formatDate(task.date)}
+            </p>
+          )}
         </div>
 
-        <div className="flex gap-2 sm:gap-3 items-center">
-          <button className="p-1 text-[#a47376] hover:text-[#8b5b5e]">
+        <div className="flex gap-2 items-center">
+          <button className="p-1 text-[#a47376] hover:text-[#8b5b5e] transition">
             <Edit size={18} />
           </button>
-          <button className="p-1 text-[#a47376] hover:text-[#8b5b5e]">
+
+          <button className="p-1 text-[#a47376] hover:text-[#8b5b5e] transition">
             <Trash size={18} />
           </button>
-          <button className="bg-[#a47376] text-white text-sm px-3 py-1 rounded-md hover:bg-[#8b5b5e]">
-            Done
+
+          <button
+            onClick={handleDoneClick}
+            className={`text-sm px-3 py-1 rounded-md transition ${
+              task.completed
+                ? "bg-green-200 text-green-700 cursor-not-allowed"
+                : "bg-[#a47376] text-white hover:bg-[#8b5b5e]"
+            }`}
+            disabled={task.completed}
+          >
+            {task.completed ? "Done ✓" : "Done"}
           </button>
         </div>
       </div>

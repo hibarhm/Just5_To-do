@@ -1,6 +1,9 @@
 const express = require('express');
 const mysql = require('mysql2/promise');
 const cors = require('cors'); 
+const http = require('http'); // ✅ for Socket.IO
+const { Server } = require('socket.io'); // ✅ import Socket.IO
+
 const app = express();
 
 // 🟢 Enable CORS properly (frontend: 5173)
@@ -56,6 +59,23 @@ async function connectWithRetry() {
 
   const pool = mysql.createPool(dbConfig);
 
+  // 🔹 Wrap Express app in HTTP server
+  const server = http.createServer(app);
+
+  // 🔹 Initialize Socket.IO
+  const io = new Server(server, {
+    cors: { origin: "http://localhost:5173" }
+  });
+
+  // 🔹 Socket.IO connection log
+  io.on('connection', (socket) => {
+    console.log('⚡ New client connected:', socket.id);
+
+    socket.on('disconnect', () => {
+      console.log('❌ Client disconnected:', socket.id);
+    });
+  });
+
   // 🟢 Create a new task
   app.post('/tasks', async (req, res) => {
     try {
@@ -64,25 +84,31 @@ async function connectWithRetry() {
         'INSERT INTO task (title, description, date) VALUES (?, ?, ?)', 
         [title, description, date]
       );
-      res.send({ 
+
+      const newTask = { 
         id: result.insertId,
         title,
         description, 
         date,
         completed: false,
         created_at: new Date()
-      });
+      };
+
+      // 🔹 Emit to all clients
+      io.emit('taskCreated', newTask);
+
+      res.send(newTask);
     } catch (error) {
       console.error('Error creating task:', error);
       res.status(500).send({ error: 'Failed to create task' });
     }
   });
 
-  // 🟢 Fetch recent incomplete tasks
+  // 🟢 Fetch all incomplete tasks (frontend will show top 5)
   app.get('/tasks', async (req, res) => {
     try {
       const [rows] = await pool.execute(
-        'SELECT * FROM task WHERE completed = FALSE ORDER BY created_at DESC LIMIT 5'
+        'SELECT * FROM task WHERE completed = 0 ORDER BY date ASC'
       );
       res.send(rows);
     } catch (error) {
@@ -98,9 +124,20 @@ async function connectWithRetry() {
 
   // 🟢 Mark task as completed
   app.put('/tasks/:id', async (req, res) => {
-    const id = req.params.id;
+    const id = Number(req.params.id); // ✅ ensure ID is a number
     try {
-      await pool.execute('UPDATE task SET completed = TRUE WHERE id = ?', [id]);
+      const [result] = await pool.execute(
+        'UPDATE task SET completed = 1 WHERE id = ?', 
+        [id]
+      );
+
+      if (result.affectedRows === 0) {
+        return res.status(404).send({ error: 'Task not found' });
+      }
+
+      // 🔹 Emit completion event to all clients
+      io.emit('taskCompleted', { id });
+
       res.send({ success: true });
     } catch (error) {
       console.error('Error updating task:', error);
@@ -108,6 +145,6 @@ async function connectWithRetry() {
     }
   });
 
-  // 🟢 Start server
-  app.listen(3000, () => console.log('🚀 Server running on port 3000'));
+  // 🔹 Start server with Socket.IO
+  server.listen(3000, () => console.log('🚀 Server running with Socket.IO on port 3000'));
 })();

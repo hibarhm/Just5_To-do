@@ -1,4 +1,3 @@
-// src/App.tsx
 import Navbar from "./components/navbar";
 import AddTaskForm from "./components/addTaskForm";
 import TaskList from "./components/taskList";

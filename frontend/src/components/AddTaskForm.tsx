@@ -31,7 +31,12 @@ export default function AddTaskForm({ onTaskCreated }: AddTaskFormProps) {
 
   const handleCalendarDone = () => {
     if (selectedDate) {
-      const formattedDate = selectedDate.toISOString().split('T')[0];
+      // FIX: Use manual formatting instead of toISOString() to avoid timezone issues
+      const year = selectedDate.getFullYear();
+      const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+      const day = String(selectedDate.getDate()).padStart(2, '0');
+      const formattedDate = `${year}-${month}-${day}`;
+      
       setDate(formattedDate);
     }
     setShowCalendar(false);
