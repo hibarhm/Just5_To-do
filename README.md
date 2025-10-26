@@ -28,7 +28,7 @@ A full-stack task management web application with **React + TypeScript frontend*
 
 ### **1. Clone the repository**  
 
-git clone <repo-url>
+git clone: https://github.com/hibarhm/Just5_To-do.git
 
 ## **2.Docker Setup**
 Make sure Docker and Docker Compose are installed.
