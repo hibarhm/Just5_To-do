@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { updateTask } from "../api";
+import { Calendar } from "lucide-react";
+import { Calendar13 } from "./Calendar13";
 
 interface EditTaskModalProps {
   task: {
@@ -17,10 +19,14 @@ export default function EditTaskModal({ task, onClose, onSave }: EditTaskModalPr
   const [title, setTitle] = useState(task.title);
   const [description, setDescription] = useState(task.description || "");
   const [date, setDate] = useState(task.date || "");
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(
+    task.date ? new Date(task.date) : new Date()
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Format date 
+  // Format date for input (YYYY-MM-DD)
   const formatForInput = (dateString?: string | null) => {
     if (!dateString) return "";
     const d = new Date(dateString);
@@ -34,7 +40,19 @@ export default function EditTaskModal({ task, onClose, onSave }: EditTaskModalPr
     setTitle(task.title);
     setDescription(task.description || "");
     setDate(formatForInput(task.date));
+    setSelectedDate(task.date ? new Date(task.date) : new Date());
   }, [task]);
+
+  const handleCalendarDone = () => {
+    if (selectedDate) {
+      const year = selectedDate.getFullYear();
+      const month = String(selectedDate.getMonth() + 1).padStart(2, "0");
+      const day = String(selectedDate.getDate()).padStart(2, "0");
+      const formattedDate = `${year}-${month}-${day}`;
+      setDate(formattedDate);
+    }
+    setShowCalendar(false);
+  };
 
   const handleSave = async () => {
     if (!title.trim()) {
@@ -46,17 +64,14 @@ export default function EditTaskModal({ task, onClose, onSave }: EditTaskModalPr
     setError(null);
 
     try {
-     
       const updates = {
         title: title.trim(),
         description: description || null,
         date: date || null,
       };
 
-      // Call single PUT API
       const updatedTask = await updateTask(task.id, updates);
-
-      onSave(updatedTask); 
+      onSave(updatedTask);
       onClose();
     } catch (err: any) {
       console.error("Failed to update task:", err);
@@ -84,7 +99,7 @@ export default function EditTaskModal({ task, onClose, onSave }: EditTaskModalPr
         </div>
 
         {/* Date */}
-        <div className="mb-4">
+        <div className="mb-4 relative">
           <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
           <input
             type="date"
@@ -93,6 +108,34 @@ export default function EditTaskModal({ task, onClose, onSave }: EditTaskModalPr
             className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-[#a47376] focus:outline-none"
             disabled={loading}
           />
+          <button
+            type="button"
+            onClick={() => setShowCalendar(!showCalendar)}
+            className="absolute right-3 bottom-3 text-gray-400 hover:text-[#a47376] transition-colors"
+            disabled={loading}
+          >
+            <Calendar className="w-4 h-4" />
+          </button>
+
+          {/* Calendar Popup (beside form) */}
+          {showCalendar && (
+            <div className="absolute right-[-22rem] top-0 w-80 p-6 border border-gray-300 rounded-md bg-white shadow-lg z-50">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold text-[#3b3b3b]">Select Date</h3>
+                <button
+                  onClick={() => setShowCalendar(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  ✕
+                </button>
+              </div>
+              <Calendar13
+                onDateSelect={setSelectedDate}
+                selectedDate={selectedDate}
+                onDone={handleCalendarDone}
+              />
+            </div>
+          )}
         </div>
 
         {/* Description */}
