@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Edit, Trash } from "lucide-react";
-import { completeTask } from "../api";
-import EditTaskModal from "./editTaskModal"; 
+import { updateTask } from "../api"; 
+import EditTaskModal from "./editTaskModal";
+
 interface TaskItemProps {
   task: {
     id: number;
@@ -11,7 +12,7 @@ interface TaskItemProps {
     completed: boolean;
   };
   onDone?: (id: number) => void;
-  onDelete?: () => void; 
+  onDelete?: () => void;
   onUpdate?: (updatedTask: any) => void;
 }
 
@@ -20,12 +21,14 @@ export default function TaskItem({ task, onDone, onDelete, onUpdate }: TaskItemP
   const [loadingDelete, setLoadingDelete] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
 
+  // Done button 
   const handleDoneClick = async () => {
     if (loadingComplete || task.completed) return;
     setLoadingComplete(true);
     try {
-      await completeTask(task.id);
-      if (onDone) onDone(task.id);
+      const updatedTask = await updateTask(task.id, { completed: true });
+      if (onDone) onDone(task.id); 
+      if (onUpdate) onUpdate(updatedTask); 
     } catch (err) {
       console.error("Failed to mark task done:", err);
     } finally {
@@ -45,7 +48,8 @@ export default function TaskItem({ task, onDone, onDelete, onUpdate }: TaskItemP
     }
   };
 
-  const handleSaveEdit = (updatedTask: any) => {
+  // ✅ edit 
+  const handleSaveEdit = async (updatedTask: any) => {
     if (onUpdate) onUpdate(updatedTask);
     setShowEditModal(false);
   };
@@ -96,7 +100,7 @@ export default function TaskItem({ task, onDone, onDelete, onUpdate }: TaskItemP
 
           <div className="flex gap-2 items-center">
             <button
-              onClick={() => setShowEditModal(true)} 
+              onClick={() => setShowEditModal(true)}
               className="p-1 text-[#a47376] hover:text-[#8b5b5e] transition"
             >
               <Edit size={18} />

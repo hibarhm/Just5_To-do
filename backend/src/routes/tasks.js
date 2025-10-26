@@ -1,27 +1,28 @@
 import express from "express";
-import { pool } from "../db.js"; 
+import { pool } from "../db.js";
 
 const router = express.Router();
 
-// GET tasks 
+
+// GET tasks
 router.get("/", async (req, res) => {
   try {
     const [rows] = await pool.query("SELECT * FROM task ORDER BY created_at DESC");
-
-    const tasks = rows.map(r => ({ ...r, done: r.completed }));
-    res.json(tasks);
+    res.json(rows);
   } catch (err) {
     console.error("Error fetching tasks:", err);
     res.status(500).json({ error: "DB error" });
   }
 });
 
-//POST task 
+
+// Create new task
+
 router.post("/", async (req, res) => {
   try {
     const { title, description, date } = req.body;
 
-    //Validation
+    // Validation
     if (!title || title.trim().length === 0) {
       return res.status(400).json({ error: "Title is required" });
     }
@@ -35,35 +36,52 @@ router.post("/", async (req, res) => {
       [title.trim(), description || null, date || null]
     );
 
-    // Fetch the created row 
+    // Fetch the created row
     const [rows] = await pool.query("SELECT * FROM task WHERE id = ?", [result.insertId]);
-    const createdTask = { ...rows[0], done: rows[0].completed };
-
-    res.status(201).json(createdTask);
+    res.status(201).json(rows[0]);
   } catch (err) {
     console.error("Error creating task:", err);
     res.status(500).json({ error: "DB insert failed" });
   }
 });
 
-// --- PUT update task as completed ---
+
+// PUT edit/update task
+
 router.put("/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const [result] = await pool.query("UPDATE task SET completed = TRUE WHERE id = ?", [id]);
+    const { title, description, date } = req.body;
 
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ error: "Task not found" });
+    // If JSON body is provided → edit
+    if (title || description || date) {
+      if (!title || title.trim().length === 0) {
+        return res.status(400).json({ error: "Title is required" });
+      }
+
+      const [result] = await pool.query(
+        "UPDATE task SET title = ?, description = ?, date = ? WHERE id = ?",
+        [title.trim(), description || null, date || null, id]
+      );
+
+      if (result.affectedRows === 0) {
+        return res.status(404).json({ error: "Task not found" });
+      }
+
+      const [rows] = await pool.query("SELECT * FROM task WHERE id = ?", [id]);
+      return res.json(rows[0]);
     }
 
-    res.json({ success: true });
+    // No body → mark done in UI only (frontend removes it)
+    return res.json({ success: true });
   } catch (err) {
     console.error("Error updating task:", err);
     res.status(500).json({ error: "DB update failed" });
   }
 });
 
-// DELETE task 
+// DELETE task
+
 router.delete("/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -73,7 +91,7 @@ router.delete("/:id", async (req, res) => {
       return res.status(404).json({ error: "Task not found" });
     }
 
-    res.sendStatus(204); 
+    res.sendStatus(204);
   } catch (err) {
     console.error("Error deleting task:", err);
     res.status(500).json({ error: "DB delete failed" });

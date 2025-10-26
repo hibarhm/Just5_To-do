@@ -1,14 +1,18 @@
-export const API_BASE = "http://localhost:3000"; 
+export const API_BASE = "http://localhost:3000";
+
 
 // Get tasks
+
 export async function getTasks() {
   const res = await fetch(`${API_BASE}/tasks`);
   if (!res.ok) throw new Error("Failed to fetch tasks");
   const data = await res.json();
-  return data.map(task => ({ ...task, done: task.completed }));
+  return data;
 }
 
-// Create task
+
+// Create new task
+
 export async function createTask(task: { title: string; description?: string; date?: string }) {
   const res = await fetch(`${API_BASE}/tasks`, {
     method: "POST",
@@ -17,24 +21,35 @@ export async function createTask(task: { title: string; description?: string; da
   });
   if (!res.ok) throw new Error("Failed to create task");
   const data = await res.json();
-  return { ...data, done: data.completed };
+  return data;
 }
 
-// Complete task
-export async function completeTask(id: number) {
-  const res = await fetch(`${API_BASE}/tasks/${id}`, { method: "PUT" });
-  if (!res.ok) throw new Error("Failed to mark task completed");
-  return await res.json(); 
+
+// Update task OR Mark as Done
+
+export async function updateTask(id: number, updates?: { title?: string; description?: string | null; date?: string | null }) {
+  const res = await fetch(`${API_BASE}/tasks/${id}`, {
+    method: "PUT",
+    headers: updates ? { "Content-Type": "application/json" } : undefined,
+    body: updates ? JSON.stringify(updates) : undefined,
+  });
+
+  if (!res.ok) {
+    const errData = await res.json().catch(() => ({}));
+    throw new Error(errData.error || "Failed to update task");
+  }
+
+  return await res.json();
 }
+
 
 // Delete task
-export async function deleteTask(id: number | string) {
-  
-  const cleanId = id.toString().trim();
 
+export async function deleteTask(id: number | string) {
+  const cleanId = id.toString().trim();
   const res = await fetch(`${API_BASE}/tasks/${cleanId}`, {
     method: "DELETE",
-    headers: { "Content-Type": "application/json" }, 
+    headers: { "Content-Type": "application/json" },
   });
 
   if (!res.ok) {
@@ -42,6 +57,5 @@ export async function deleteTask(id: number | string) {
     throw new Error(errorData.error || "Failed to delete task");
   }
 
-  const data = await res.json();
-  return data; 
+  return await res.json();
 }

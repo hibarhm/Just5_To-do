@@ -35,11 +35,20 @@ export default function TaskList() {
     fetchTasks();
   }, []);
 
+  //  task completion
   const handleDone = (id: number) => {
     const updatedTasks = tasks.filter((t) => t.id !== id);
     setTasks(updatedTasks);
     setDisplayedTasks(updatedTasks.slice(0, 5));
     setToastMessage("Task marked as completed!");
+  };
+
+  // task update after edit
+  const handleUpdate = (updatedTask: any) => {
+    const updatedTasks = tasks.map((t) => (t.id === updatedTask.id ? updatedTask : t));
+    setTasks(updatedTasks.filter((t) => !t.completed));
+    setDisplayedTasks(updatedTasks.filter((t) => !t.completed).slice(0, 5));
+    setToastMessage("Task updated successfully!");
   };
 
   const handleDelete = async (id: number, title: string) => {
@@ -88,6 +97,7 @@ export default function TaskList() {
                   task={task}
                   onDone={handleDone}
                   onDelete={() => handleDelete(task.id, task.title)}
+                  onUpdate={handleUpdate} 
                 />
               ))}
             </div>
