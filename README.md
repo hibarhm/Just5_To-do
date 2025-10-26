@@ -1,6 +1,6 @@
 # **Just5 To-Do App**
 
-A full-stack task management web application with **React + TypeScript frontend**, **Node.js + Express backend**, and **MySQL database**, all containerized using **Docker**. Users can create, update, complete, and delete tasks with a simple interface.  
+A full-stack task management web application with **React + TypeScript frontend**, **Node.js + Express backend**, and **MySQL database**, all containerized using **Docker**. Users can create, complete, and delete tasks with a simple interface.  
 
 ## **Tech Stack**  
 
@@ -20,7 +20,6 @@ A full-stack task management web application with **React + TypeScript frontend*
 
 ## **Features**  
 - Add new tasks with title, description, and due date  
-- Edit existing tasks (title, description, date)  
 - Mark tasks as completed  
 - Delete tasks  
 - Dynamic and responsive UI  
