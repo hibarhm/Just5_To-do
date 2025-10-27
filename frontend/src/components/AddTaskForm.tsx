@@ -70,7 +70,6 @@ export default function AddTaskForm({ onTaskCreated }: AddTaskFormProps) {
       if (onTaskCreated) onTaskCreated(created);
       resetForm();
 
-      
       setToastMessage("Task Added");
     } catch (err: any) {
       console.error("Create task failed:", err);
@@ -91,8 +90,9 @@ export default function AddTaskForm({ onTaskCreated }: AddTaskFormProps) {
 
         {/* Title */}
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+          <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">Title</label>
           <input
+            id="title"
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -103,8 +103,9 @@ export default function AddTaskForm({ onTaskCreated }: AddTaskFormProps) {
 
         {/* Date */}
         <div className="mb-4 relative">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+          <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-1">Date</label>
           <input
+            id="date"
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
@@ -123,8 +124,9 @@ export default function AddTaskForm({ onTaskCreated }: AddTaskFormProps) {
 
         {/* Description */}
         <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Task Description</label>
+          <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">Task Description</label>
           <textarea
+            id="description"
             rows={8}
             value={description}
             onChange={(e) => setDescription(e.target.value)}

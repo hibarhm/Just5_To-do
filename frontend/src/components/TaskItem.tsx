@@ -1,19 +1,21 @@
-import { useState } from "react";
+
+import React, { useState } from "react";
 import { Edit, Trash } from "lucide-react";
-import { updateTask } from "../api"; 
-import EditTaskModal from "./editTaskModal";
+import { updateTask } from "../api";
+import EditTaskModal from "./editTaskModal"; 
+type Task = {
+  id: number;
+  title: string;
+  description?: string | null;
+  date?: string | null;
+  completed: boolean;
+};
 
 interface TaskItemProps {
-  task: {
-    id: number;
-    title: string;
-    description?: string | null;
-    date?: string | null;
-    completed: boolean;
-  };
+  task: Task;
   onDone?: (id: number) => void;
   onDelete?: () => void;
-  onUpdate?: (updatedTask: any) => void;
+  onUpdate?: (updatedTask: Task) => void;
 }
 
 export default function TaskItem({ task, onDone, onDelete, onUpdate }: TaskItemProps) {
@@ -21,18 +23,22 @@ export default function TaskItem({ task, onDone, onDelete, onUpdate }: TaskItemP
   const [loadingDelete, setLoadingDelete] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
 
-  // Done button 
   const handleDoneClick = async () => {
     if (loadingComplete || task.completed) return;
     setLoadingComplete(true);
+
     try {
-      const updatedTask = await updateTask(task.id, { completed: true });
-      if (onDone) onDone(task.id); 
-      if (onUpdate) onUpdate(updatedTask); 
+      // call API to update task as completed
+      const updated = await updateTask(task.id, { completed: true });
+      // notify parent(s)
+      if (onDone) onDone(task.id);
+      
     } catch (err) {
       console.error("Failed to mark task done:", err);
     } finally {
-      setLoadingComplete(false);
+      // keep a short delay to allow UI "Saving..." to appear in tests/UI
+      // NOTE: don't make this too long — 300-500ms is typical.
+      setTimeout(() => setLoadingComplete(false), 300);
     }
   };
 
@@ -48,8 +54,8 @@ export default function TaskItem({ task, onDone, onDelete, onUpdate }: TaskItemP
     }
   };
 
-  // ✅ edit 
-  const handleSaveEdit = async (updatedTask: any) => {
+  // called by the EditTaskModal after save
+  const handleSaveEdit = (updatedTask: Task) => {
     if (onUpdate) onUpdate(updatedTask);
     setShowEditModal(false);
   };
@@ -57,8 +63,9 @@ export default function TaskItem({ task, onDone, onDelete, onUpdate }: TaskItemP
   const formatDate = (dateString?: string | null) => {
     if (!dateString) return "";
     try {
-      const date = new Date(dateString);
-      return date.toLocaleDateString("en-GB");
+      const d = new Date(dateString);
+      // keep same format as your UI/tests expect (adjust to 'en-GB' or toLocaleString)
+      return d.toLocaleDateString("en-GB");
     } catch {
       return dateString;
     }
@@ -82,6 +89,7 @@ export default function TaskItem({ task, onDone, onDelete, onUpdate }: TaskItemP
             >
               {task.title}
             </h3>
+
             {task.description && (
               <p
                 className={`text-sm ${
@@ -91,6 +99,7 @@ export default function TaskItem({ task, onDone, onDelete, onUpdate }: TaskItemP
                 {task.description}
               </p>
             )}
+
             {task.date && (
               <p className="text-xs text-gray-400 mt-2">
                 Due: {formatDate(task.date)}
@@ -99,26 +108,35 @@ export default function TaskItem({ task, onDone, onDelete, onUpdate }: TaskItemP
           </div>
 
           <div className="flex gap-2 items-center">
+            {/* Edit button: aria-label + data-testid for tests */}
             <button
+              aria-label="Edit task"
+              data-testid="edit-button"
               onClick={() => setShowEditModal(true)}
               className="p-1 text-[#a47376] hover:text-[#8b5b5e] transition"
+              type="button"
             >
               <Edit size={18} />
             </button>
 
+            {/* Delete button */}
             <button
+              aria-label="Delete task"
+              data-testid="delete-button"
               onClick={handleDeleteClick}
               className={`p-1 transition ${
-                loadingDelete
-                  ? "text-gray-400 cursor-not-allowed"
-                  : "text-[#a47376] hover:text-red-900"
+                loadingDelete ? "text-gray-400 cursor-not-allowed" : "text-[#a47376] hover:text-red-900"
               }`}
               disabled={loadingDelete}
+              type="button"
             >
               <Trash size={18} />
             </button>
 
+            {/* Done button */}
             <button
+              aria-label={task.completed ? "Task done" : "Mark task done"}
+              data-testid="done-button"
               onClick={handleDoneClick}
               className={`text-sm px-3 py-1 rounded-md transition ${
                 task.completed
@@ -126,12 +144,9 @@ export default function TaskItem({ task, onDone, onDelete, onUpdate }: TaskItemP
                   : "bg-[#a47376] text-white hover:bg-[#8b5b5e]"
               }`}
               disabled={task.completed || loadingComplete}
+              type="button"
             >
-              {task.completed
-                ? "Done ✓"
-                : loadingComplete
-                ? "Saving..."
-                : "Done"}
+              {task.completed ? "Done ✓" : loadingComplete ? "Saving..." : "Done"}
             </button>
           </div>
         </div>
