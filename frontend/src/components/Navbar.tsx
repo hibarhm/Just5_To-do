@@ -11,7 +11,6 @@ export default function Navbar() {
      
       const dayName = now.toLocaleDateString("en-GB", { weekday: "long" });
 
-      // Format date as DD/MM/YYYY
       const day = String(now.getDate()).padStart(2, "0");
       const month = String(now.getMonth() + 1).padStart(2, "0");
       const year = now.getFullYear();

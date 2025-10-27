@@ -26,7 +26,7 @@ export default function EditTaskModal({ task, onClose, onSave }: EditTaskModalPr
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Format date for input (YYYY-MM-DD)
+  
   const formatForInput = (dateString?: string | null) => {
     if (!dateString) return "";
     const d = new Date(dateString);
@@ -117,7 +117,7 @@ export default function EditTaskModal({ task, onClose, onSave }: EditTaskModalPr
             <Calendar className="w-4 h-4" />
           </button>
 
-          {/* Calendar Popup (beside form) */}
+          {/* Calendar Popup */}
           {showCalendar && (
             <div className="absolute right-[-22rem] top-0 w-80 p-6 border border-gray-300 rounded-md bg-white shadow-lg z-50">
               <div className="flex justify-between items-center mb-4">
