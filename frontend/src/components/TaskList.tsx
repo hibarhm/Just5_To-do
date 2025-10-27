@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import TaskItem from "./TaskItem";
+import TaskItem from "./taskItem";
 import { getTasks, deleteTask } from "../api";
 import { groupTasksByDate } from "../group/groupTasksByDate";
 
