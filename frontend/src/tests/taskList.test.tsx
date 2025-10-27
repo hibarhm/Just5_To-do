@@ -27,13 +27,13 @@ describe("TaskList Component", () => {
 
     render(<TaskList />);
 
-    // Wait for tasks to appear after fetching
+    
     await waitFor(() => {
       expect(screen.getByText("Buy groceries")).toBeInTheDocument();
       expect(screen.getByText("Finish report")).toBeInTheDocument();
     });
 
-    // Optional: check section headings
+    
     expect(screen.getByText(/to-do/i)).toBeInTheDocument();
     expect(screen.getByText(/upcoming tasks/i)).toBeInTheDocument();
   });

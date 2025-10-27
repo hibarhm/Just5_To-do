@@ -6,7 +6,7 @@
 @layer base {
   body {
     background-color: #f8f8f8;
-    color: rgb(31 41 55); /* text-gray-800 equivalent */
+    color: rgb(31 41 55); 
     font-family: ui-sans-serif, system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -14,7 +14,7 @@
 
   h1, h2, h3, h4, h5, h6 {
     font-weight: 600;
-    color: rgb(31 41 55); /* text-gray-800 equivalent */
+    color: rgb(31 41 55); 
   }
 
   button {

@@ -30,14 +30,13 @@ export default function TaskItem({ task, onDone, onDelete, onUpdate }: TaskItemP
     try {
       // call API to update task as completed
       const updated = await updateTask(task.id, { completed: true });
-      // notify parent(s)
+    
       if (onDone) onDone(task.id);
       
     } catch (err) {
       console.error("Failed to mark task done:", err);
     } finally {
-      // keep a short delay to allow UI "Saving..." to appear in tests/UI
-      // NOTE: don't make this too long — 300-500ms is typical.
+     
       setTimeout(() => setLoadingComplete(false), 300);
     }
   };
@@ -54,7 +53,7 @@ export default function TaskItem({ task, onDone, onDelete, onUpdate }: TaskItemP
     }
   };
 
-  // called by the EditTaskModal after save
+  
   const handleSaveEdit = (updatedTask: Task) => {
     if (onUpdate) onUpdate(updatedTask);
     setShowEditModal(false);
@@ -64,7 +63,7 @@ export default function TaskItem({ task, onDone, onDelete, onUpdate }: TaskItemP
     if (!dateString) return "";
     try {
       const d = new Date(dateString);
-      // keep same format as your UI/tests expect (adjust to 'en-GB' or toLocaleString)
+     
       return d.toLocaleDateString("en-GB");
     } catch {
       return dateString;
@@ -108,7 +107,7 @@ export default function TaskItem({ task, onDone, onDelete, onUpdate }: TaskItemP
           </div>
 
           <div className="flex gap-2 items-center">
-            {/* Edit button: aria-label + data-testid for tests */}
+            {/* Edit button */}
             <button
               aria-label="Edit task"
               data-testid="edit-button"
